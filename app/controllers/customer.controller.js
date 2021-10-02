@@ -148,20 +148,7 @@ exports.deleteAll = (req, res) => {
     })
     .catch(err => {
       res.status(500).send({
-        message: err.message || "Some error occurred while removing all tutorials."
-      });
-    });
-};
-
-// find all published Customer
-exports.findAllPublished = (req, res) => {
-  Customer.findAll({ where: { published: true } })
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving tutorials."
+        message: err.message || "Some error occurred while removing all Customer."
       });
     });
 };
