@@ -9,9 +9,6 @@ module.exports = app => {
   // Retrieve all Customers
   router.get("/", customers.findAll);
 
-  // Retrieve all published Customers
-  router.get("/published", customers.findAllPublished);
-
   // Retrieve a single Customer with id
   router.get("/:id", customers.findOne);
 
