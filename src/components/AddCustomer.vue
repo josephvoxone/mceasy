@@ -8,7 +8,7 @@
         <template v-slot:item="{ item }">
           <v-breadcrumbs-item
             class="breadcumb-mc"
-            :href="item.href"
+            :to="item.href"
             :disabled="item.disabled"
           >
             {{ item.text.toUpperCase() }}
@@ -20,8 +20,8 @@
         <v-row>
           <v-col cols="12" sm="2">
             <v-img
-              :src="customer.image"
-              :lazy-src="customer.image"
+              v-bind:src="customer.image"
+              v-bind:lazy-src="customer.image"
               aspect-ratio="1"
               class="grey lighten-2"
             >
@@ -30,15 +30,24 @@
             <v-btn
               block
               depressed
-              @click="addCustomer"
+              @click="$refs.refInputEl.click()"
               class="mt-2 btn-primer btn-upload"
             >
               Upload
             </v-btn>
+            <!-- Input Image -->
+            <input
+              ref="refInputEl"
+              type="file"
+              accept="image/*"
+              :hidden="true"
+              @change="selectImage"
+            />
+
             <v-btn
               block
               depressed
-              @click="addCustomer"
+              @click="removeImage"
               class="mt-2 btn-primer btn-upload"
             >
               Remove
@@ -104,7 +113,7 @@
             <v-text-field
               v-model="customer.id_number"
               label="Identity Number"
-              :rules="[(v) => !!v || 'Identity number is required']"
+              :rules="[rules.required, rules.id_number]"
               required
               outlined
               append-icon="mdi-smart-card"
@@ -115,7 +124,7 @@
               label="Email"
               type="email"
               placeholder="john@gmail.com"
-              :rules="[(v) => !!v || 'Email is required']"
+              :rules="[rules.required, rules.email]"
               required
               outlined
               append-icon="mdi-email"
@@ -127,9 +136,11 @@
               v-model="customer.phone"
               append-icon="mdi-phone"
               label="Phone Number"
-              :rules="[(v) => !!v || 'Phone Number is required']"
+              type="num"
+              :rules="[rules.required, rules.phone]"
               required
               outlined
+              maxlength="20"
             ></v-text-field>
           </v-col>
           <v-col cols="12" sm="5">
@@ -163,10 +174,11 @@
         </v-row>
 
         <v-divider class="my-5"></v-divider>
-
-        <v-btn depressed @click="addCustomer" class="mr-2 btn-primer">
-          Add Customer
-        </v-btn>
+        <div class="d-flex justify-end">
+          <v-btn depressed @click="addCustomer" class="mr-2 btn-primer">
+            Add Customer
+          </v-btn>
+        </div>
       </v-form>
     </div>
   </div>
@@ -191,22 +203,57 @@ export default {
           href: "#",
         },
       ],
+      rules: {
+        required: (value) => !!value || "Required.",
+        counter: (value) => value.length <= 20 || "Max 20 characters",
+        email: (value) => {
+          const pattern =
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return pattern.test(value) || "Invalid e-mail.";
+        },
+        phone: (value) => {
+          const pattern =
+            /(\+62 ((\d{3}([ -]\d{3,})([- ]\d{4,})?)|(\d+)))|(\(\d+\) \d+)|\d{3}( \d+)+|(\d+[ -]\d+)|\d+/;
+          return pattern.test(value) || "Invalid phone.";
+        },
+        id_number: (value) => {
+          const pattern = /[0-9]+/;
+          return pattern.test(value) || "Invalid ID Number.";
+        },
+      },
       menudate: false,
-      customer: { lat: null, long: null },
+      customer: { lat: null, long: null, image: null },
     };
   },
   methods: {
     addCustomer() {
-      console.log(this.customer);
+      if (this.$refs.form.validate()) {
+        console.log(this.customer);
+        CustomerAPI.create(this.customer)
+          .then((response) => {
+            console.log(response.data);
+            this.message = "The Customer was added successfully!";
+            this.$router.push({ name: "customers" });
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
+    },
+    removeImage() {
+      this.customer.image = null;
+    },
+    selectImage() {
+      const file = document.querySelector("input[type=file]").files[0];
+      const reader = new FileReader();
 
-      CustomerAPI.create(this.customer)
-        .then((response) => {
-          console.log(response.data);
-          this.message = "The Customer was added successfully!";
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      let rawImg;
+      reader.onloadend = () => {
+        rawImg = reader.result;
+        // console.log("Raw Image", rawImg);
+        this.customer.image = rawImg;
+      };
+      reader.readAsDataURL(file);
     },
   },
 };

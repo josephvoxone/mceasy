@@ -33,6 +33,8 @@
 }
 
 .nav-header {
+    background-color: #494583 !important;
+    box-shadow: none !important;
     position: absolute !important;
     height: 64px !important;
     margin-top: 0px !important;
