@@ -64,12 +64,12 @@
 
             <v-data-table :headers="headers" :items="customers">
               <template v-slot:[`item.name`]="{ item }">
-                <div class="d-inline-flex  justify-center">
-                  <v-avatar class="mr-3" size="36">
+                <div class="d-inline-flex justify-center">
+                  <v-avatar class="mr-3" size="36" color="grey">
                     <img
+                      v-if="item.image"
                       :src="item.image"
                       style="object-fit: cover"
-                      alt="John"
                     />
                   </v-avatar>
                   <div>

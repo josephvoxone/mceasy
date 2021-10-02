@@ -156,14 +156,56 @@
 
             <v-textarea
               append-icon="mdi-home-analytics"
-              v-model="customer.detail_address"
+              v-bind:value="customer.detail_address"
               label="Detail Address"
               rows="2"
               :rules="[(v) => !!v || 'Detail Address is required']"
               required
               outlined
+              readonly
+              hint="use gmaps for fill your detail address"
+              persistent-hint
             ></v-textarea>
 
+            <div class="ma-auto" style="display: flex; justify-content: center">
+              <GmapAutocomplete
+                required
+                class="input-maps"
+                :select-first-on-enter="true"
+                @place_changed="setPlace"
+              >
+              </GmapAutocomplete>
+            </div>
+            <GmapMap
+              class="mb-5"
+              style="width: 100%; height: 300px; margin-top: -50px"
+              :zoom="1"
+              :center="{ lat: -6.6771688, lng: 111.8481033 }"
+              :options="{
+                zoomControl: false,
+                mapTypeControl: false,
+                scaleControl: false,
+                streetViewControl: false,
+                rotateControl: false,
+                fullscreenControl: false,
+                disableDefaultUi: false,
+              }"
+            >
+              <GmapMarker
+                :clickable="true"
+                :draggable="true"
+                v-for="(marker, index) in markers"
+                :key="index"
+                :position="marker.position"
+              />
+              <GmapMarker
+                v-if="this.customer.lat"
+                :position="{
+                  lat: parseInt(this.customer.lat),
+                  lng: parseInt(this.customer.long),
+                }"
+              />
+            </GmapMap>
             <v-text-field
               append-icon="mdi-instagram"
               v-model="customer.instagram"
@@ -191,6 +233,8 @@ export default {
   name: "add-customer",
   data() {
     return {
+      markers: [],
+      place: null,
       items: [
         {
           text: "Customers",
@@ -226,6 +270,13 @@ export default {
     };
   },
   methods: {
+    setPlace(place) {
+      this.place = place;
+      this.customer.detail_address = place.formatted_address;
+      this.customer.lat = this.place.geometry.location.lat();
+      this.customer.long = this.place.geometry.location.lng();
+      console.log(this.customer);
+    },
     addCustomer() {
       if (this.$refs.form.validate()) {
         console.log(this.customer);
@@ -260,6 +311,18 @@ export default {
 </script>
 
 <style>
+.input-maps {
+  z-index: 9999;
+  position: relative;
+  background: #ffff;
+  padding: 0 15px;
+  width: 90%;
+  border: 1px solid #9e9e9e;
+  border-radius: 5px;
+  margin: 10px 0;
+  font-weight: 100;
+  font-family: "Inter", sans-serif;
+}
 .btn-delete {
   background-color: #292560 !important;
   color: #ffff !important;

@@ -52,7 +52,6 @@
             <img
               src="https://s3.envato.com/files/263313078/_8502884.jpg"
               style="object-fit: cover"
-              alt="John"
             />
           </v-avatar>
           <div
